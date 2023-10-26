@@ -151,3 +151,63 @@ ROLLBACK; -- removes table
 CREATE DATABASE HR;
 USE HR;
 
+--3.1
+GO
+CREATE PROCEDURE addDzial(@name NVARCHAR(100), @address NVARCHAR(200)) AS
+BEGIN
+    DECLARE @departmentNo int,
+            @sql NVARCHAR(300)
+
+    SET @departmentNo = (SELECT MAX(id_dzialu) FROM dzialy)+10;
+    SET @sql = 'INSERT INTO dzialy (id_dzialu, nazwa, adres) VALUES(' + 
+        CAST(@departmentNo AS NVARCHAR(5)) + ', ''' + @name + ''', ''' + @address + ''');';
+    EXEC(@sql);
+END;
+
+GO 
+--DROP PROCEDURE addDzial;
+
+EXEC addDzial @name = 'Kadry', @address = 'Czestochowa';
+SELECT * FROM dzialy;
+
+--3.2
+-- z płacą mieszczącą się w połowie widełek
+-- płacowych zdefiniowanych dla jego stanowiska i o numerze akt o 100 większym od aktualnie najwyższego
+-- numeru akt (kolumna nr_akt) w firmie
+-- @firstName VARCHAR(100) = 'undefined', @birthDate DATE = null, @employmentDate DATE = GETDATE(), @unEmploymentDate DATE = null)
+GO
+CREATE PROCEDURE AddWorker(@bossId INT = 1200,  @lastName VARCHAR(100), @post VARCHAR(100), @Department VARCHAR(100)) AS
+BEGIN
+    DECLARE @nr_akt int,
+            @placa Decimal(6,2),
+            @id_dzialu int,
+            @sqlStatement VARCHAR(400)
+    SET @nr_akt = (SELECT MAX(nr_akt) from pracownicy) + 100;
+    SET @placa = (SELECT AVG(placa) FROM pracownicy WHERE stanowisko = @post);
+    SET @id_dzialu = (SELECT id_dzialu FROM dzialy WHERE nazwa = @Department);
+
+    SET @sqlStatement = 'INSERT INTO pracownicy (nr_akt, nazwisko, stanowisko, przelozony, placa, id_dzialu) VALUES (' +
+        CAST(@nr_akt AS VARCHAR(10)) + ', ''' + @lastName + ''', ''' + @post + ''', ' + CAST(@bossId AS VARCHAR(5)) +
+        ', ' + CAST(@placa AS VARCHAR(8)) + ', ' + CAST(@id_dzialu AS VARCHAR(5)) + ');';
+
+    EXEC(@sqlStatement);
+END
+
+
+BEGIN TRANSACTION;
+EXEC AddWorker @lastName = 'Adamski', @post = 'Dyrektor', @Department = 'Kadry';
+commit;
+
+SELECT * FROM pracownicy;
+SELECT * FROM dzialy;
+
+--3.2
+-- dodaje 2 pracownika
+-- dzial Logistyka
+-- stanowisko logistyk 
+-- najwyzsza placa wsrod logistykow
+-- przelozony jest dyrektor z dzialu logistyka
+
+
+
+SELECT TOP 1 * FROM pracownicy WHERE id_dzialu =(SELECT id_dzialu FROM dzialy WHERE nazwa = 'logistyka') AND stanowisko = 'dyrektor';
