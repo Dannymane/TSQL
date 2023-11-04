@@ -21,7 +21,7 @@ FROM information_schema.tables
 WHERE table_type = 'BASE TABLE';
 
 insert into  Wedkarze (id_Wedkarza, nazwisko, imiona, data_ur) 
-    Values (10001, 'Kowalski', 'Jan', '1970-03-12');
+    Values (10001, 'Kowalski', 'Jan', '1970-03-13');
 
 SELECT GETDATE();     -- 2023-10-02 10:16:24.023
 SELECT SYSDATETIME(); -- 2023-10-02 10:16:35.1963970
@@ -70,3 +70,9 @@ DECLARE @EndDate DATE = '2024-09-01';
 PRINT DATEDIFF(YEAR, @EndDate, @StartDate); -- -2
 PRINT DATEDIFF(MONTH, @StartDate, @EndDate); -- 32
 
+--  CREATE PROCEDURE printNumbers(@number int) AS
+-- EXEC printNumbers 10;
+
+--For example, the following query would return rows with values like "example,"
+-- "Example," and "EXAMPLE" because the WHERE clause is case-insensitive:
+SELECT * FROM YourTable WHERE YourColumn = 'example';

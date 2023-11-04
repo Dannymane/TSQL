@@ -150,6 +150,7 @@ ROLLBACK; -- removes table
 --3 
 CREATE DATABASE HR;
 USE HR;
+select * from dzialy;
 
 --3.1
 GO
@@ -201,13 +202,42 @@ commit;
 SELECT * FROM pracownicy;
 SELECT * FROM dzialy;
 
---3.2
+--3.3
 -- dodaje 2 pracownika
 -- dzial Logistyka
 -- stanowisko logistyk 
 -- najwyzsza placa wsrod logistykow
 -- przelozony jest dyrektor z dzialu logistyka
+GO
+CREATE PROCEDURE AddWorker2(@dzial NVARCHAR(100), @stanowisko NVARCHAR(100), @imiona NVARCHAR(200), @nazwisko NVARCHAR(200)) AS
+BEGIN
+    DECLARE 
+        @sql NVARCHAR(500),
+        @przelozony INT,
+        @placa INT,
+        @id_dzialu INT,
+        @nr_akt INT
+    
+    SET @nr_akt = (SELECT MAX(nr_akt) from pracownicy) + 1;
+    SET @id_dzialu = (SELECT id_dzialu from dzialy WHERE nazwa = @dzial);
+    SET @przelozony = (SELECT TOP 1 nr_akt FROM pracownicy WHERE stanowisko = 'dyrektor' AND id_dzialu = @id_dzialu);
+    SET @placa = (SELECT max(placa) FROM pracownicy WHERE stanowisko = @stanowisko);
+    SET @sql = 'INSERT INTO pracownicy (id_dzialu, stanowisko, przelozony, placa, imiona, nazwisko, nr_akt) VALUES ('
+        + CAST(@id_dzialu AS NVARCHAR(4)) 
+        + ', ''' + @stanowisko 
+        + ''', ' + CAST(@przelozony AS NVARCHAR(12)) 
+        + ', ' + CAST(@placa AS NVARCHAR(12)) 
+        + ', ''' + @imiona 
+        + ''', ''' + @nazwisko 
+        + ''', ' + CAST(@nr_akt AS NVARCHAR(20)) + ');';
+    exec(@sql);
 
+END;
+DROP PROCEDURE AddWorker2;
 
+Begin TRANSACTION;
+exec AddWorker2 @dzial='logistyka', @stanowisko='logistyk', @imiona='Adam', @nazwisko='Konieczko';
+exec AddWorker2 @dzial='logistyka', @stanowisko='logistyk', @imiona='Zamojski', @nazwisko='Robert';
+ROLLBACK;
 
 SELECT TOP 1 * FROM pracownicy WHERE id_dzialu =(SELECT id_dzialu FROM dzialy WHERE nazwa = 'logistyka') AND stanowisko = 'dyrektor';
