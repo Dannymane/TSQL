@@ -241,3 +241,44 @@ exec AddWorker2 @dzial='logistyka', @stanowisko='logistyk', @imiona='Zamojski', 
 ROLLBACK;
 
 SELECT TOP 1 * FROM pracownicy WHERE id_dzialu =(SELECT id_dzialu FROM dzialy WHERE nazwa = 'logistyka') AND stanowisko = 'dyrektor';
+
+GO
+CREATE PROCEDURE GetUserByID
+    @UserID INT
+AS
+BEGIN
+    -- Properly parameterized query
+    SELECT * FROM pracownicy WHERE nr_akt = @UserID;
+END;
+
+
+exec GetUserByID @UserID=111;
+
+DECLARE @int INT
+SET @int = 'das1'
+PRINT CAST(@int AS NVARCHAR(10));
+
+GO
+CREATE PROCEDURE FindWorkers(
+    @nr_akt INT = null,
+    @nazwisko NVARCHAR(100) = null,
+    @imiona NVARCHAR(100) = null,
+    @stanowisko NVARCHAR(30) = null,
+    @przelozony INT = null
+) AS
+BEGIN
+    DECLARE @sql NVARCHAR(MAX)
+    SET @sql = 'SELECT * FROM pracownicy WHERE -1=-1';
+
+    IF @nr_akt IS NOT NULL SET @sql = @sql + ''' AND nr_akt = ' + CAST(@nr_akt AS NVARCHAR(10)) + '''';
+    IF @nazwisko IS NOT NULL SET @sql = @sql + ''' AND nazwiso = ''%''' + @nazwisko + '''%''';
+    IF @imiona IS NOT NULL SET @sql = @sql + ''' AND imiona = ''%''' + @imiona + '''%''';
+    IF @stanowisko IS NOT NULL SET @sql = @sql + ''' AND stanowisko = ''%''' + @stanowisko + '''%''';
+    IF @przelozony IS NOT NULL SET @sql = @sql + ''' AND przelozony = ' + CAST(@przelozony AS NVARCHAR(10)) + '''';
+
+    exec(@sql);
+END;
+
+--DROP PROCEDURE FindWorkers;
+
+EXEC FindWorkers @nr_akt = 111;
